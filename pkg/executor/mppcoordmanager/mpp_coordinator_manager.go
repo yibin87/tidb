@@ -24,7 +24,6 @@ import (
 	"github.com/pingcap/kvproto/pkg/mpp"
 	"github.com/pingcap/tidb/pkg/executor/metrics"
 	"github.com/pingcap/tidb/pkg/kv"
-	"github.com/pingcap/tidb/pkg/store/copr"
 	"github.com/pingcap/tidb/pkg/util/logutil"
 	"go.uber.org/zap"
 )
@@ -58,7 +57,8 @@ type MPPCoordinatorManager struct {
 func (m *MPPCoordinatorManager) Run() {
 	m.ctx, m.cancel = context.WithCancel(context.Background())
 	m.wg.Add(1)
-	m.maxLifeTime = uint64(copr.TiFlashReadTimeoutUltraLong.Nanoseconds() + detectFrequency.Nanoseconds())
+	//m.maxLifeTime = uint64(copr.TiFlashReadTimeoutUltraLong.Nanoseconds() + detectFrequency.Nanoseconds())
+	m.maxLifeTime = uint64(detectFrequency.Nanoseconds() * 2)
 	go func() {
 		defer m.wg.Done()
 		ticker := time.NewTicker(detectFrequency)
