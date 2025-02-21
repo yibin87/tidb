@@ -79,9 +79,15 @@ func (m *MPPCoordinatorManager) detectAndDelete(nowTs uint64) {
 	m.mu.Lock()
 	for id, coord := range m.coordinatorMap {
 		// Mpp queries may run forever if it continuously sends data to coordinator, thus we need check IsClosed here
-		if nowTs > id.MPPQueryID.QueryTs+m.maxLifeTime && coord.IsClosed() {
-			outOfTimeIDs = append(outOfTimeIDs, id)
-			delete(m.coordinatorMap, id)
+		if nowTs > id.MPPQueryID.QueryTs+m.maxLifeTime {
+			if coord.IsClosed() {
+				outOfTimeIDs = append(outOfTimeIDs, id)
+				delete(m.coordinatorMap, id)
+			} else {
+				logutil.BgLogger().Error("Unclosed overtime MppCoordinator",
+					zap.Uint64("QueryID", id.MPPQueryID.LocalQueryID),
+					zap.Uint64("QueryTs", id.MPPQueryID.QueryTs))
+			}
 		}
 	}
 	m.mu.Unlock()
