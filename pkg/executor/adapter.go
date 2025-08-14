@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"runtime/debug"
 	"runtime/trace"
 	"strconv"
 	"strings"
@@ -2160,9 +2161,9 @@ func (a *ExecStmt) observeStmtBeginForTopSQL(ctx context.Context) context.Contex
 		// Drop them does not cause notable accuracy issue in TopSQL.
 		return ctx
 	}
-
 	vars := a.Ctx.GetSessionVars()
 	sc := vars.StmtCtx
+	logutil.BgLogger().Info("CallStackOfObserveStmt", zap.Int64("sqlID", a.Ctx.GetSessionVars().StartTime.UnixNano()), zap.String("originalSQL", sc.OriginalSQL), zap.String("", string(debug.Stack())))
 	normalizedSQL, sqlDigest := sc.SQLDigest()
 	normalizedPlan, planDigest := GetPlanDigest(sc)
 	var sqlDigestByte, planDigestByte []byte
@@ -2180,8 +2181,9 @@ func (a *ExecStmt) observeStmtBeginForTopSQL(ctx context.Context) context.Contex
 		}
 		return topsql.AttachSQLAndPlanInfo(ctx, sqlDigest, planDigest)
 	}
-
+	logutil.BgLogger().Info("observeStmtBeginForTopSQL v2")
 	if stats != nil {
+		logutil.BgLogger().Info("observeStmtBeginForTopSQL v3")
 		stats.OnExecutionBegin(sqlDigestByte, planDigestByte)
 		// This is a special logic prepared for TiKV's SQLExecCount.
 		sc.KvExecCounter = stats.CreateKvExecCounter(sqlDigestByte, planDigestByte)

@@ -24,6 +24,7 @@ var (
 	TopSQLIgnoredCounter          *prometheus.CounterVec
 	TopSQLReportDurationHistogram *prometheus.HistogramVec
 	TopSQLReportDataHistogram     *prometheus.HistogramVec
+	TopSQLExecCounter             prometheus.Counter
 )
 
 // InitTopSQLMetrics initializes top-sql metrics.
@@ -53,4 +54,12 @@ func InitTopSQLMetrics() {
 			Help:      "Bucket histogram of reporting records/sql/plan count to the top-sql agent.",
 			Buckets:   prometheus.ExponentialBuckets(1, 2, 20), // 1 ~ 524288
 		}, []string{LblType})
+
+	TopSQLExecCounter = metricscommon.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "tidb",
+			Subsystem: "topsql",
+			Name:      "sql_exec_total",
+			Help:      "Counter of topsql exec.",
+		})
 }

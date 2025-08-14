@@ -18,6 +18,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pingcap/tidb/pkg/metrics"
+	"github.com/pingcap/tidb/pkg/util/logutil"
 	"go.uber.org/atomic"
 )
 
@@ -64,7 +66,8 @@ func (s *StatementStats) OnExecutionBegin(sqlDigest, planDigest []byte) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	item := s.GetOrCreateStatementStatsItem(sqlDigest, planDigest)
-
+	logutil.BgLogger().Info("OnExecutionBegin")
+	metrics.TopSQLExecCounter.Inc()
 	item.ExecCount++
 	// Count more data here.
 }
