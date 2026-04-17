@@ -1310,6 +1310,7 @@ func (cc *clientConn) addQueryMetrics(cmd byte, startTime time.Time, err error) 
 			metrics.QueryProcessedKeyHistogram.WithLabelValues(sqlType, dbName).Observe(float64(vars.StmtCtx.GetExecDetails().ScanDetail.ProcessedKeys))
 		}
 	}
+	metrics.QueryDurationByResourceGroupHistogram.WithLabelValues(vars.StmtCtx.ResourceGroupName).Observe(cost.Seconds())
 }
 
 // dispatch handles client request based on command which is the first byte of the data.
